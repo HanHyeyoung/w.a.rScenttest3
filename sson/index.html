@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>나에게 맞는 세제향 찾기 | WHAT A RELIEF</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600,700&display=swap">
+<style>
+  :root{
+    --paper:#F7F7F5;
+    --forest:#1A3C2B;
+    --grid:#3A3A38;
+    --coral:#FF8C69;   /* B. 진저플라워 */
+    --mint:#9EFFBF;    /* A. 프레쉬가든 */
+    --gold:#F4D35E;    /* C. 토마토리프 */
+
+    --ink:#1E1E1A;
+    --ink-soft:#6B6B63;
+    --line:rgba(58,58,56,0.2);
+    --line-strong:rgba(58,58,56,0.35);
+
+    --font-display:'Space Grotesk','Pretendard','Noto Sans KR',sans-serif;
+    --font-body:'General Sans','Pretendard','Noto Sans KR',sans-serif;
+    --font-mono:'JetBrains Mono','Pretendard','Noto Sans KR',monospace;
+  }
+
+  *{box-sizing:border-box; margin:0; padding:0;}
+
+  html,body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--font-body);
+    min-height:100vh;
+  }
+
+  body{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:40px 16px;
+    background-color:var(--paper);
+    background-image:
+      linear-gradient(rgba(58,58,56,0.10) 0.5px, transparent 0.5px),
+      linear-gradient(90deg, rgba(58,58,56,0.10) 0.5px, transparent 0.5px),
+      linear-gradient(rgba(58,58,56,0.16) 0.5px, transparent 0.5px),
+      linear-gradient(90deg, rgba(58,58,56,0.16) 0.5px, transparent 0.5px);
+    background-size:220px 220px, 220px 220px, 44px 44px, 44px 44px;
+    background-position:-1px -1px, -1px -1px, -1px -1px, -1px -1px;
+  }
+
+  .stage{
+    width:100%;
+    max-width:520px;
+    position:relative;
+  }
+
+  /* ---------- 기술 상단바 ---------- */
+  .tech-bar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:20px;
+    padding-bottom:16px;
+    border-bottom:1px solid var(--line);
+  }
+
+  .tech-logo{
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+
+  .logo-box{
+    width:30px;
+    height:30px;
+    background:var(--forest);
+    color:var(--paper);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:var(--font-mono);
+    font-weight:700;
+    font-size:13px;
+    border-radius:2px;
+    flex-shrink:0;
+  }
+
+  .logo-word{
+    font-family:var(--font-mono);
+    font-size:10px;
+    font-weight:600;
+    letter-spacing:0.14em;
+    color:var(--forest);
+    text-transform:uppercase;
+  }
+
+  .status-badge{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    border:1px solid rgba(26,60,43,0.25);
+    padding:5px 12px;
+    border-radius:2px;
+  }
+  .status-dot{
+    width:8px; height:8px;
+    background:var(--forest);
+    flex-shrink:0;
+  }
+  .status-text{
+    font-family:var(--font-mono);
+    font-size:10px;
+    font-weight:600;
+    letter-spacing:0.12em;
+    color:var(--ink);
+    text-transform:uppercase;
+  }
+
+  .screen{
+    display:none;
+    animation:fadeUp .4s ease;
+  }
+  .screen.active{ display:block; }
+
+  @keyframes fadeUp{
+    from{ opacity:0; transform:translateY(8px); }
+    to{ opacity:1; transform:translateY(0); }
+  }
+
+  /* ---------- 공통 카드 ---------- */
+  .card{
+    position:relative;
+    background:#FFFFFF;
+    border:1px solid var(--line-strong);
+    border-radius:2px;
+    padding:40px 32px;
+  }
+
+  .corner{
+    position:absolute;
+    width:10px;
+    height:10px;
+    pointer-events:none;
+  }
+  .corner-tl{ top:-1px; left:-1px; border-top:2px solid var(--forest); border-left:2px solid var(--forest); }
+  .corner-tr{ top:-1px; right:-1px; border-top:2px solid var(--forest); border-right:2px solid var(--forest); }
+  .corner-bl{ bottom:-1px; left:-1px; border-bottom:2px solid var(--forest); border-left:2px solid var(--forest); }
+  .corner-br{ bottom:-1px; right:-1px; border-bottom:2px solid var(--forest); border-right:2px solid var(--forest); }
+
+  /* ---------- 인트로 ---------- */
+  #intro .card{ text-align:left; }
+
+  .kicker{
+    font-family:var(--font-mono);
+    font-size:11px;
+    font-weight:500;
+    letter-spacing:0.1em;
+    color:var(--ink-soft);
+    text-transform:uppercase;
+    border-left:1px solid var(--forest);
+    padding-left:10px;
+  }
+
+  .intro-title{
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:34px;
+    line-height:1.15;
+    margin-top:20px;
+    letter-spacing:-0.02em;
+    color:var(--forest);
+  }
+
+  .intro-lead{
+    margin-top:18px;
+    font-size:15px;
+    line-height:1.7;
+    color:var(--ink-soft);
+    font-family:var(--font-body);
+  }
+
+  .intro-swatches{
+    display:flex;
+    gap:0;
+    margin-top:28px;
+    border:1px solid var(--line-strong);
+  }
+  .swatch{
+    flex:1;
+    height:10px;
+  }
+  .swatch.a{ background:var(--mint); }
+  .swatch.b{ background:var(--coral); }
+  .swatch.c{ background:var(--gold); }
+
+  .btn-primary{
+    margin-top:32px;
+    width:100%;
+    border:1px solid var(--forest);
+    cursor:pointer;
+    background:var(--forest);
+    color:var(--paper);
+    font-family:var(--font-mono);
+    font-weight:600;
+    font-size:13px;
+    letter-spacing:0.06em;
+    padding:16px 20px;
+    border-radius:2px;
+    transition:filter .15s ease;
+  }
+  .btn-primary:hover{ filter:brightness(1.15); }
+  .btn-primary:active{ filter:brightness(0.95); }
+
+  .intro-meta{
+    margin-top:16px;
+    font-family:var(--font-mono);
+    font-size:10px;
+    letter-spacing:0.06em;
+    color:var(--ink-soft);
+    text-align:center;
+    text-transform:uppercase;
+  }
+
+  /* ---------- 퀴즈 ---------- */
+  .quiz-head{ margin-bottom:28px; }
+
+  .q-eyebrow-row{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    margin-bottom:12px;
+  }
+
+  .q-eyebrow{
+    font-family:var(--font-mono);
+    font-size:10px;
+    font-weight:600;
+    letter-spacing:0.12em;
+    color:var(--ink-soft);
+    text-transform:uppercase;
+  }
+
+  .q-count{
+    font-family:var(--font-mono);
+    font-size:12px;
+    font-weight:600;
+    color:var(--forest);
+    letter-spacing:0.04em;
+  }
+  .q-count span{ color:var(--ink-soft); }
+
+  /* 시향지 게이지 -> 세그먼트 진행바 */
+  .strip{
+    display:flex;
+    gap:4px;
+    height:6px;
+  }
+  .segment{
+    flex:1;
+    background:var(--line-strong);
+    border-radius:1px;
+    transition:background .3s ease;
+  }
+  .segment.filled{ background:var(--forest); }
+
+  .q-label{
+    font-family:var(--font-mono);
+    font-size:10px;
+    font-weight:600;
+    letter-spacing:0.12em;
+    color:var(--ink-soft);
+    text-transform:uppercase;
+    margin:24px 0 8px;
+  }
+
+  .q-text{
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:22px;
+    line-height:1.45;
+    letter-spacing:-0.01em;
+    color:var(--forest);
+  }
+
+  .options{
+    margin-top:24px;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+
+  .option{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    text-align:left;
+    background:#fff;
+    border:1px solid var(--line-strong);
+    border-radius:2px;
+    padding:15px 16px;
+    font-family:var(--font-body);
+    font-size:14.5px;
+    color:var(--ink);
+    cursor:pointer;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  .option-dot{
+    width:9px; height:9px;
+    border:1px solid var(--ink-soft);
+    flex-shrink:0;
+    transition:background .15s ease, border-color .15s ease;
+  }
+  .option:hover{
+    border-color:var(--forest);
+    background:#FAFBF9;
+  }
+  .option:hover .option-dot{
+    background:var(--forest);
+    border-color:var(--forest);
+  }
+  .option:active{ background:#F4F5F2; }
+
+  .quiz-back{
+    margin-top:22px;
+    background:none;
+    border:none;
+    color:var(--ink-soft);
+    font-family:var(--font-mono);
+    font-size:11px;
+    letter-spacing:0.06em;
+    cursor:pointer;
+    text-transform:uppercase;
+  }
+  .quiz-back:hover{ color:var(--forest); }
+
+  /* ---------- 결과 ---------- */
+  #result .card{ text-align:left; padding-left:36px; }
+
+  .result-accent{
+    position:absolute;
+    left:-1px;
+    top:22px;
+    bottom:22px;
+    width:4px;
+  }
+
+  .result-badge{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    font-family:var(--font-mono);
+    font-size:10px;
+    font-weight:600;
+    letter-spacing:0.14em;
+    padding:6px 12px;
+    border:1px solid rgba(26,60,43,0.25);
+    border-radius:2px;
+    text-transform:uppercase;
+  }
+  .result-badge-dot{
+    width:8px; height:8px;
+    flex-shrink:0;
+  }
+
+  .result-title{
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:32px;
+    margin-top:18px;
+    letter-spacing:-0.02em;
+    color:var(--forest);
+  }
+
+  .result-sub{
+    margin-top:8px;
+    font-size:14.5px;
+    color:var(--ink-soft);
+    font-family:var(--font-body);
+  }
+
+  .result-bars{
+    margin-top:26px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .bar-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .bar-label{
+    width:84px;
+    flex-shrink:0;
+    font-family:var(--font-mono);
+    font-size:11px;
+    letter-spacing:0.02em;
+    color:var(--ink-soft);
+  }
+  .bar-track{
+    flex:1;
+    height:8px;
+    background:var(--paper);
+    border:1px solid var(--line-strong);
+    border-radius:1px;
+    overflow:hidden;
+  }
+  .bar-fill{ height:100%; }
+  .bar-pct{
+    width:36px;
+    text-align:right;
+    font-family:var(--font-mono);
+    font-size:11px;
+    color:var(--ink-soft);
+  }
+
+  .result-body{
+    margin-top:28px;
+    padding-top:24px;
+    border-top:1px solid var(--line);
+  }
+  .result-body h3{
+    font-family:var(--font-mono);
+    font-size:11px;
+    font-weight:600;
+    letter-spacing:0.1em;
+    color:var(--ink-soft);
+    text-transform:uppercase;
+    margin-bottom:8px;
+  }
+  .result-body p{
+    font-size:14.5px;
+    line-height:1.75;
+    color:var(--ink);
+    font-family:var(--font-body);
+  }
+  .result-body p + h3{ margin-top:22px; }
+
+  .product-chip{
+    margin-top:22px;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    font-family:var(--font-mono);
+    font-size:12px;
+    font-weight:600;
+    letter-spacing:0.02em;
+    padding:10px 14px;
+    border:1px solid var(--line-strong);
+    border-radius:2px;
+    color:var(--ink);
+  }
+  .product-chip::before{
+    content:"";
+    width:8px; height:8px;
+    background:var(--dot, var(--forest));
+    flex-shrink:0;
+  }
+
+  .btn-buy{
+    margin-top:16px;
+    display:block;
+    width:100%;
+    text-align:center;
+    text-decoration:none;
+    box-sizing:border-box;
+    background:var(--forest);
+    color:var(--paper);
+    font-family:var(--font-mono);
+    font-weight:600;
+    font-size:13px;
+    letter-spacing:0.06em;
+    padding:16px 20px;
+    border:1px solid var(--forest);
+    border-radius:2px;
+    transition:filter .15s ease;
+  }
+  .btn-buy:hover{ filter:brightness(1.15); }
+  .btn-buy:active{ filter:brightness(0.95); }
+
+  .btn-secondary{
+    margin-top:12px;
+    width:100%;
+    border:1px solid var(--line-strong);
+    background:transparent;
+    color:var(--ink);
+    font-family:var(--font-mono);
+    font-weight:600;
+    font-size:12.5px;
+    letter-spacing:0.04em;
+    padding:14px 20px;
+    border-radius:2px;
+    cursor:pointer;
+    transition:border-color .15s ease, color .15s ease;
+    text-transform:uppercase;
+  }
+  .btn-secondary:hover{ border-color:var(--forest); color:var(--forest); }
+
+  @media (max-width:480px){
+    .card{ padding:30px 22px; }
+    #result .card{ padding-left:28px; }
+    .intro-title{ font-size:27px; }
+    .q-text{ font-size:19px; }
+    .result-title{ font-size:26px; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .screen{ animation:none; }
+    .segment{ transition:none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="stage">
+
+  <div class="tech-bar">
+    <div class="tech-logo">
+      <span class="logo-box">W</span>
+      <span class="logo-word">What a Relief</span>
+    </div>
+    <div class="status-badge">
+      <span class="status-dot" id="statusDot"></span>
+      <span class="status-text" id="statusText">READY</span>
+    </div>
+  </div>
+
+  <!-- ============ 인트로 ============ -->
+  <section id="intro" class="screen active">
+    <div class="card">
+      <span class="corner corner-tl"></span><span class="corner corner-tr"></span>
+      <span class="corner corner-bl"></span><span class="corner corner-br"></span>
+
+      <div class="kicker">향 취향 테스트 · SCENT MATCH</div>
+      <h1 class="intro-title">나에게 맞는<br>세제향은 무엇일까요?</h1>
+      <p class="intro-lead">
+        여섯 가지 질문에 답하면, 당신의 생활 취향과 가장 잘 맞는
+        세제향 계열과 그 이유를 알려드려요.
+        당신의 취향은 어떤 향일까요?
+      </p>
+      <div class="intro-swatches">
+        <div class="swatch a"></div>
+        <div class="swatch b"></div>
+        <div class="swatch c"></div>
+      </div>
+      <button class="btn-primary" id="startBtn">테스트 시작하기 →</button>
+      <div class="intro-meta">약 1분 소요 · 결과는 3가지 향 중 하나</div>
+    </div>
+  </section>
+
+  <!-- ============ 퀴즈 ============ -->
+  <section id="quiz" class="screen">
+    <div class="card">
+      <span class="corner corner-tl"></span><span class="corner corner-tr"></span>
+      <span class="corner corner-bl"></span><span class="corner corner-br"></span>
+
+      <div class="quiz-head">
+        <div class="q-eyebrow-row">
+          <div class="q-eyebrow">Question</div>
+          <div class="q-count"><span id="qNum">1</span> / <span id="qTotal">6</span></div>
+        </div>
+        <div class="strip" id="strip"></div>
+      </div>
+      <div class="q-label">가장 끌리는 것을 골라주세요</div>
+      <h2 class="q-text" id="qText"></h2>
+      <div class="options" id="options"></div>
+      <button class="quiz-back" id="backBtn" style="visibility:hidden;">← 이전 질문으로</button>
+    </div>
+  </section>
+
+  <!-- ============ 결과 ============ -->
+  <section id="result" class="screen">
+    <div class="card">
+      <span class="corner corner-tl"></span><span class="corner corner-tr"></span>
+      <span class="corner corner-bl"></span><span class="corner corner-br"></span>
+      <div class="result-accent" id="resultAccent"></div>
+
+      <span class="result-badge" id="resultBadge">
+        <span class="result-badge-dot" id="resultBadgeDot"></span>
+        <span id="resultBadgeText"></span>
+      </span>
+      <h1 class="result-title" id="resultTitle"></h1>
+      <p class="result-sub" id="resultSub"></p>
+
+      <div class="result-bars" id="resultBars"></div>
+
+      <div class="result-body">
+        <h3>추천 이유</h3>
+        <p id="resultReason"></p>
+        <h3>이런 향이에요</h3>
+        <p id="resultDesc"></p>
+      </div>
+
+      <div class="product-chip" id="resultProduct"></div>
+
+      <a href="https://what-a-relief.co.kr/product/sson/110"
+         target="_blank" rel="noopener noreferrer" class="btn-buy" id="buyBtn">캡슐세제 구매하러 가기 →</a>
+
+      <button class="btn-secondary" id="restartBtn">다시 테스트하기</button>
+    </div>
+  </section>
+
+</div>
+
+<script>
+(function(){
+
+  /* ---------------- 데이터 ---------------- */
+
+  const TYPES = {
+    A: {
+      key:'A',
+      name:'프레쉬가든',
+      tagEn:'Fresh Garden',
+      colorHex:'#9EFFBF',
+      colorDark:'#1A3C2B',
+      subtitle:'담백하고 자연스러운 걸 가장 좋아하는 타입',
+      reason:'질문 전반에서 "미니멀함"과 "자연스러움"을 고르는 경향이 가장 뚜렷했어요. 향이 진하게 존재감을 드러내기보다 산뜻하게 스치듯 남는 쪽을 계속 선택했다는 건, 프레쉬가든이 원래 취향에 가장 가깝다는 뜻이에요.',
+      desc:'군더더기 없는 향, 이제 막 물을 준 화분이나 갓 벤 잔디 냄새를 좋아하는 당신. 화려하게 존재감을 드러내기보다는 있는 듯 없는 듯 자연스럽게 스며드는 향을 선호해요. 정돈된 공간에서 마음이 편안해지는 편이라, 세탁 후에도 "깨끗하고 산뜻하다"는 감각 자체가 당신에게는 relief예요.',
+      product:'프레쉬가든'
+    },
+    B: {
+      key:'B',
+      name:'진저플라워',
+      tagEn:'Ginger Flower',
+      colorHex:'#FF8C69',
+      colorDark:'#1A3C2B',
+      subtitle:'기분 전환과 화사한 디테일을 중요하게 여기는 타입',
+      reason:'"화사함", "기분 전환", "예쁜 것"을 고르는 답변이 가장 많았어요. 향을 고를 때도 은은함보다 존재감 있고 기억에 남는 쪽을 선택했다는 건, 달콤한 꽃향에 알싸함이 감도는 진저플라워가 당신에게 relief를 주는 향이라는 신호예요.',
+      desc:'향 하나로 하루의 무드가 달라진다고 믿는 당신. 달콤한 꽃향에 생강 특유의 알싸함이 살짝 감도는 향을 맡으면 저절로 기분이 좋아지고, 작은 디테일 하나에도 정성을 들이는 편이에요. 빨래를 개는 시간조차 나를 위한 작은 선물처럼 만들고 싶어 해요.',
+      product:'진저플라워'
+    },
+    C: {
+      key:'C',
+      name:'토마토리프',
+      tagEn:'Tomato Leaf',
+      colorHex:'#F4D35E',
+      colorDark:'#1A3C2B',
+      subtitle:'남들과는 다른, 나만의 시그니처를 좋아하는 타입',
+      reason:'"특별함", "여운", "나만의 것"을 고르는 빈도가 가장 높았어요. 흔한 클린 향이나 플로럴보다 그린 줄기를 스친 듯한 개성 있는 향에 끌린다는 건, 토마토리프가 당신에게 relief를 가장 잘 만들어준다는 뜻이에요.',
+      desc:'누구나 좋아할 향보다 "나다운" 향을 원하는 당신. 달콤하지 않은, 초록빛 줄기를 스친 듯 그린하고 살짝 톡 쏘는 향에 끌리고, 혼자만의 조용한 시간에서 진짜 휴식을 느껴요. 흔치 않은 향이 하루의 마무리를 더 특별하게 만들어주길 바라요.',
+      product:'토마토리프'
+    }
+  };
+
+  const QUESTIONS = [
+    {
+      text:'빨래를 개는 순간, 어떤 향이 났으면 좋겠어요?',
+      options:[
+        {label:'방금 마른 수건같은 상쾌한 향', score:{A:2,B:0,C:0}},
+        {label:'클린하고 우디한 고급스러운 꽃 향', score:{A:0,B:2,C:0}},
+        {label:'방금 딴 줄기에서 나는 싱그러운 향', score:{A:0,B:0,C:2}}
+      ]
+    },
+    {
+      text:'주말 아침, 나의 이상적인 모습은?',
+      options:[
+        {label:'창문 열고 이불 정리, 미니멀하게 하루 시작', score:{A:2,B:0,C:0}},
+        {label:'좋아하는 카페에서 브런치, 예쁜 사진 남기기', score:{A:0,B:2,C:0}},
+        {label:'음악 틀어놓고 책 읽으며 여유 즐기기', score:{A:0,B:0,C:2}},
+        {label:'밀린 잠 실컷 자고 늦게 일어나기', score:{A:1,B:0,C:1}}
+      ]
+    },
+    {
+      text:'옷장을 열었을 때, 이런 향이 났으면 해요.',
+      options:[
+        {label:'산뜻하고 달콤한 향', score:{A:0,B:2,C:0}},
+        {label:'클린하고 상쾌한 향', score:{A:2,B:0,C:0}},
+        {label:'싱그러운 향', score:{A:0,B:0,C:2}}
+      ]
+    },
+    {
+      text:'스트레스 받을 때, 나를 릴리프(relief)시켜주는 건?',
+      options:[
+        {label:'정돈된 공간, 깔끔하게 정리하기', score:{A:2,B:0,C:0}},
+        {label:'예쁜 옷이나 소품 쇼핑하기', score:{A:0,B:2,C:0}},
+        {label:'조용한 나만의 시간, 반신욕이나 명상', score:{A:0,B:0,C:2}},
+        {label:'친한 친구와 수다 떨며 웃기', score:{A:1,B:1,C:0}}
+      ]
+    },
+    {
+      text:'향수나 디퓨저를 고를 때 가장 중요한 기준은?',
+      options:[
+        {label:'자극적이지 않고 은은할 것', score:{A:1,B:0,C:1}},
+        {label:'화사하고 기분이 좋아질 것', score:{A:0,B:2,C:0}},
+        {label:'특별하고 나만의 시그니처가 될 것', score:{A:0,B:0,C:2}}
+      ]
+    },
+    {
+      text:'이 중 가장 끌리는 계절은?',
+      options:[
+        {label:'초여름 — 상쾌한 바람이 부는 계절', score:{A:2,B:0,C:0}},
+        {label:'봄 — 꽃이 만개하는 계절', score:{A:0,B:2,C:0}},
+        {label:'가을·겨울 — 차분하고 깊어지는 계절', score:{A:0,B:0,C:2}}
+      ]
+    }
+  ];
+
+  /* ---------------- 상태 ---------------- */
+
+  let current = 0;
+  const scores = {A:0, B:0, C:0};
+  const history = [];
+
+  /* ---------------- DOM ---------------- */
+
+  const screens = {
+    intro: document.getElementById('intro'),
+    quiz: document.getElementById('quiz'),
+    result: document.getElementById('result')
+  };
+
+  const qNumEl = document.getElementById('qNum');
+  const qTotalEl = document.getElementById('qTotal');
+  const qTextEl = document.getElementById('qText');
+  const optionsEl = document.getElementById('options');
+  const stripEl = document.getElementById('strip');
+  const backBtn = document.getElementById('backBtn');
+  const statusText = document.getElementById('statusText');
+  const statusDot = document.getElementById('statusDot');
+
+  qTotalEl.textContent = QUESTIONS.length;
+
+  function pad(n){ return n < 10 ? '0'+n : ''+n; }
+
+  function showScreen(name){
+    Object.values(screens).forEach(s => s.classList.remove('active'));
+    screens[name].classList.add('active');
+  }
+
+  /* ---------------- 세그먼트 진행바 ---------------- */
+
+  function buildSegments(){
+    stripEl.innerHTML = '';
+    for(let i=0;i<QUESTIONS.length;i++){
+      const seg = document.createElement('div');
+      seg.className = 'segment';
+      stripEl.appendChild(seg);
+    }
+  }
+
+  function updateSegments(){
+    const segs = stripEl.querySelectorAll('.segment');
+    segs.forEach((seg, i) => {
+      seg.classList.toggle('filled', i < current);
+    });
+  }
+
+  /* ---------------- 렌더 ---------------- */
+
+  function renderQuestion(){
+    const q = QUESTIONS[current];
+    qNumEl.textContent = pad(current + 1);
+    qTextEl.textContent = q.text;
+    backBtn.style.visibility = current === 0 ? 'hidden' : 'visible';
+
+    statusText.textContent = pad(current+1) + ' / ' + pad(QUESTIONS.length);
+    statusDot.style.background = 'var(--forest)';
+
+    optionsEl.innerHTML = '';
+    q.options.forEach((opt) => {
+      const btn = document.createElement('button');
+      btn.className = 'option';
+      btn.type = 'button';
+      btn.innerHTML = '<span class="option-dot"></span><span>'+opt.label+'</span>';
+      btn.addEventListener('click', () => selectOption(opt));
+      optionsEl.appendChild(btn);
+    });
+
+    updateSegments();
+  }
+
+  function selectOption(opt){
+    scores.A += opt.score.A || 0;
+    scores.B += opt.score.B || 0;
+    scores.C += opt.score.C || 0;
+    history.push(opt.score);
+
+    current += 1;
+
+    if(current >= QUESTIONS.length){
+      updateSegments();
+      setTimeout(showResult, 200);
+    }else{
+      renderQuestion();
+    }
+  }
+
+  function goBack(){
+    if(current === 0) return;
+    current -= 1;
+    const last = history.pop();
+    if(last){
+      scores.A -= last.A || 0;
+      scores.B -= last.B || 0;
+      scores.C -= last.C || 0;
+    }
+    renderQuestion();
+  }
+
+  backBtn.addEventListener('click', goBack);
+
+  /* ---------------- 결과 계산 ---------------- */
+
+  function getWinner(){
+    const entries = Object.entries(scores);
+    entries.sort((a,b) => b[1]-a[1]);
+    return entries[0][0];
+  }
+
+  function showResult(){
+    const winnerKey = getWinner();
+    const type = TYPES[winnerKey];
+    const total = Math.max(scores.A + scores.B + scores.C, 1);
+
+    document.getElementById('resultBadgeText').textContent = type.tagEn.toUpperCase();
+    document.getElementById('resultBadgeDot').style.background = type.colorHex;
+
+    document.getElementById('resultTitle').textContent = type.name;
+    document.getElementById('resultSub').textContent = type.subtitle;
+    document.getElementById('resultReason').textContent = type.reason;
+    document.getElementById('resultDesc').textContent = type.desc;
+    document.getElementById('resultAccent').style.background = type.colorHex;
+
+    const chip = document.getElementById('resultProduct');
+    chip.style.setProperty('--dot', type.colorHex);
+    chip.textContent = '왓아릴리프 추천 라인 · ' + type.product;
+
+    statusText.textContent = 'MATCHED';
+    statusDot.style.background = type.colorHex;
+
+    const barsEl = document.getElementById('resultBars');
+    barsEl.innerHTML = '';
+    ['A','B','C'].forEach(key => {
+      const t = TYPES[key];
+      const pct = Math.round((scores[key]/total)*100);
+      const row = document.createElement('div');
+      row.className = 'bar-row';
+      row.innerHTML = `
+        <div class="bar-label">${t.name}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${pct}%; background:${t.colorHex};"></div></div>
+        <div class="bar-pct">${pct}%</div>
+      `;
+      barsEl.appendChild(row);
+    });
+
+    showScreen('result');
+  }
+
+  /* ---------------- 시작/재시작 ---------------- */
+
+  function resetAll(){
+    current = 0;
+    scores.A = 0; scores.B = 0; scores.C = 0;
+    history.length = 0;
+    buildSegments();
+    renderQuestion();
+    showScreen('quiz');
+  }
+
+  document.getElementById('startBtn').addEventListener('click', resetAll);
+  document.getElementById('restartBtn').addEventListener('click', resetAll);
+
+  buildSegments();
+  renderQuestion();
+
+})();
+</script>
+
+</body>
+</html>
